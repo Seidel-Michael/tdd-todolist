@@ -497,3 +497,5 @@ CREATE TABLE todolist.todos (
     CONSTRAINT todolist.todos PRIMARY KEY (id)
 );
 ```
+
+This concludes the database part. We continue with the [api](../api/index.md) part of this project.
