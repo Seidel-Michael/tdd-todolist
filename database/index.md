@@ -33,18 +33,14 @@ docker run --name todolist-postgres -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpa
 - *OK*
 - *Right click on todolist*
 - *Set active*
-- *Right click on todolist*
-- *Create -> Schema*
-- Schema name: todolist
-- *OK*
 ---
-- *Right click on todolist schema*
+- *Right click on public schema*
 - *Set active*
 - *F3*
 - CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 - *Execute SQL Statement*
 ---
-- *Right click on todolist schema*
+- *Right click on public schema*
 - *Create -> Table*
 - *Properties*
 - Table Name: todos
@@ -184,7 +180,7 @@ describe('DbConnection', () => {
             await connection.addTodo('abcdefg');
 
             expect(poolStub.query.callCount).to.equal(1);
-            expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('INSERT INTO todolist.todos(title, state) VALUES ($1, true)');
+            expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('INSERT INTO todos(title, state) VALUES ($1, true)');
             expect(poolStub.query.firstCall.args[0].values).to.deep.equal(['abcdefg']);
         });
     });
@@ -192,9 +188,10 @@ describe('DbConnection', () => {
 ```
 8. If you run `npm test` again you should see all the new test failing. We now can implement the addTodo function.
 
-`src/db/db-connection.spec.ts`
+`src/db/db-connection.ts`
 ```ts
 import { DatabasePoolType, sql, ConnectionError } from 'slonik';
+import { TodoItem } from '../models/todo-item';
 
 export class DbConnection {
     private pool: DatabasePoolType;
@@ -205,7 +202,7 @@ export class DbConnection {
 
     public async addTodo(title: string) {
         try {
-            await this.pool.query(sql`INSERT INTO todolist.todos(title, state) VALUES (${title}, true)`);
+            await this.pool.query(sql`INSERT INTO todos(title, state) VALUES (${title}, true)`);
         } catch (error) {
             if (error instanceof ConnectionError) {
                 throw new Error('Connection to database failed.');
@@ -214,20 +211,25 @@ export class DbConnection {
             throw new Error('Oops... something went wrong.');
         }
     }
-};
-```
-9. After running `npm test` test again the test should be okay. We can implement the test for the other functions accordingly. But as alway. Write the test -> Check that the test is failing -> Implement the function -> Check that the tests are passing. To benefit from the compile time typscript types we'll add an `TodoItem` interface.
 
-The result should look something like this.
+    public async removeTodo(id: string)
+    {
+        throw new Error('Not implemented!');
+    }
 
-`src/models/todo-item.ts`
-```ts
-export interface TodoItem {
-    id: string;
-    title: string;
-    state: boolean;
-};
+    public async changeTodoState(id: string, state: boolean)
+    {
+        throw new Error('Not implemented!');
+    }
+
+    public async getTodos()
+    {
+        throw new Error('Not implemented!');
+    }
+}
 ```
+
+9. Now we can write the rest of the tests and implementation. But always remember. Write the tests first and verify that they fail.
 
 `src/db/db-connection.spec.ts`
 ```ts
@@ -271,7 +273,7 @@ describe('DbConnection', () => {
             await connection.addTodo('abcdefg');
 
             expect(poolStub.query.callCount).to.equal(1);
-            expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('INSERT INTO todolist.todos(title, state) VALUES ($1, true)');
+            expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('INSERT INTO todos(title, state) VALUES ($1, true)');
             expect(poolStub.query.firstCall.args[0].values).to.deep.equal(['abcdefg']);
         });
     });
@@ -293,7 +295,7 @@ describe('DbConnection', () => {
             await connection.removeTodo('id');
 
             expect(poolStub.query.callCount).to.equal(1);
-            expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('DELETE FROM todolist.todos WHERE id=$1');
+            expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('DELETE FROM todos WHERE id=$1');
             expect(poolStub.query.firstCall.args[0].values).to.deep.equal(['{id}']);
         });
 
@@ -317,7 +319,7 @@ describe('DbConnection', () => {
             await connection.changeTodoState('id', false);
 
             expect(poolStub.query.callCount).to.equal(1);
-            expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('UPDATE todolist.todos SET state=$1 WHERE id=$2');
+            expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('UPDATE todos SET state=$1 WHERE id=$2');
             expect(poolStub.query.firstCall.args[0].values).to.deep.equal([false, '{id}']);
         });
     });
@@ -363,7 +365,7 @@ describe('DbConnection', () => {
             const result = await connection.getTodos();
 
             expect(poolStub.any.callCount).to.equal(1);
-            expect(normalizeQuery(poolStub.any.firstCall.args[0].sql)).to.equal('SELECT * FROM todolist.todos');
+            expect(normalizeQuery(poolStub.any.firstCall.args[0].sql)).to.equal('SELECT * FROM todos');
 
             expect(result).to.deep.equal([
                 {
@@ -406,7 +408,7 @@ export class DbConnection {
 
     public async addTodo(title: string) {
         try {
-            await this.pool.query(sql`INSERT INTO todolist.todos(title, state) VALUES (${title}, true)`);
+            await this.pool.query(sql`INSERT INTO todos(title, state) VALUES (${title}, true)`);
         } catch (error) {
             if (error instanceof ConnectionError) {
                 throw new Error('Connection to database failed.');
@@ -418,7 +420,7 @@ export class DbConnection {
 
     public async removeTodo(id: string) {
         try {
-            await this.pool.query(sql`DELETE FROM todolist.todos WHERE id=${`{${id}}`}`);
+            await this.pool.query(sql`DELETE FROM todos WHERE id=${`{${id}}`}`);
         } catch (error) {
             if (error instanceof ConnectionError) {
                 throw new Error('Connection to database failed.');
@@ -430,7 +432,7 @@ export class DbConnection {
 
     public async changeTodoState(id: string, state: boolean) {
         try {
-            await this.pool.query(sql`UPDATE todolist.todos SET state=${state} WHERE id=${`{${id}}`}`);
+            await this.pool.query(sql`UPDATE todos SET state=${state} WHERE id=${`{${id}}`}`);
         } catch (error) {
             if (error instanceof ConnectionError) {
                 throw new Error('Connection to database failed.');
@@ -443,7 +445,7 @@ export class DbConnection {
     public async getTodos(): Promise<TodoItem[]> {
         let result;
         try {
-            result = await this.pool.any<TodoItem>(sql`SELECT * FROM todolist.todos`);
+            result = await this.pool.any<TodoItem>(sql`SELECT * FROM todos`);
         } catch (error) {
             if (error instanceof ConnectionError) {
                 throw new Error('Connection to database failed.');
@@ -485,17 +487,23 @@ connection.getTodos().then((result) => {
 });
 ```
 
-**Todo:** Modify the docker command to create a new database if needed.
+13. We don't want to create the database manually every time. So we add an `init.sql` script to the postgres container to automate this.
 
+`init.sql`
 ```sql
 CREATE DATABASE todolist;
+\connect -reuse-previous=on "dbname='todolist'"
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE TABLE todolist.todos (
-	id uuid NOT NULL DEFAULT uuid_generate_v4(),
+CREATE TABLE todos (
+	id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
 	title varchar(50) NOT NULL,
-	state bool NOT NULL,
-    CONSTRAINT todolist.todos PRIMARY KEY (id)
+	state bool NOT NULL
 );
 ```
+
+```sh
+docker run --name todolist-postgres -p 5432:5432 -v$(pwd)/init.sql:/docker-entrypoint-initdb.d/init.sql -e POSTGRES_PASSWORD=mysecretpassword postgres
+```
+
 
 This concludes the database part. We continue with the [api](../api/index.md) part of this project.
