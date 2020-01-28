@@ -432,4 +432,40 @@ api.app.listen(port)
     });
 ```
 
+7. If you don't want to host the UI on the same host and port as the API, you have to activate CORS.
+
+```sh
+npm install -S @koa/cors
+npm install -D @types/koa__cors
+```
+
+`api.ts`
+```ts
+import { Server } from 'http';
+import Koa from 'koa';
+import koaBodyParser from 'koa-bodyparser';
+import koaLogger from 'koa-logger';
+import Cors from '@koa/cors';
+
+import { TodoRoutes } from './routes/todo-routes'
+import { DbConnection } from '../db/db-connection';
+
+export class Api {
+    public app: Koa;
+
+    constructor(connection: DbConnection) {
+        this.app = new Koa();
+        this.app.use(koaLogger());
+        this.app.use(koaBodyParser());
+        this.app.use(Cors());
+
+        const todoRoutes = new TodoRoutes(connection);
+
+        this.app.use(todoRoutes.router.routes());
+    }
+}
+```
+
+
+
 This concludes the api part. We continue with the [UI](../ui/index.md) part of this project.
