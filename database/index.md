@@ -35,12 +35,6 @@ docker run --name todolist-postgres -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpa
 - *Set active*
 ---
 - *Right click on public schema*
-- *Set active*
-- *F3*
-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-- *Execute SQL Statement*
----
-- *Right click on public schema*
 - *Create -> Table*
 - *Properties*
 - Table Name: todos
@@ -48,9 +42,8 @@ docker run --name todolist-postgres -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpa
 - *Right click in table*
 - *Create new column*
 - Name: id
-- Data type: uuid
+- Data type: SERIAL
 - Not Null: checked
-- Default: uuid_generate_v4()
 - *OK*
 ---
 - *Right click in table*
@@ -296,7 +289,7 @@ describe('DbConnection', () => {
 
             expect(poolStub.query.callCount).to.equal(1);
             expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('DELETE FROM todos WHERE id=$1');
-            expect(poolStub.query.firstCall.args[0].values).to.deep.equal(['{id}']);
+            expect(poolStub.query.firstCall.args[0].values).to.deep.equal(['id']);
         });
 
 
@@ -320,7 +313,7 @@ describe('DbConnection', () => {
 
             expect(poolStub.query.callCount).to.equal(1);
             expect(normalizeQuery(poolStub.query.firstCall.args[0].sql)).to.equal('UPDATE todos SET state=$1 WHERE id=$2');
-            expect(poolStub.query.firstCall.args[0].values).to.deep.equal([false, '{id}']);
+            expect(poolStub.query.firstCall.args[0].values).to.deep.equal([false, 'id']);
         });
     });
 
@@ -341,22 +334,22 @@ describe('DbConnection', () => {
         it('should resolve with data from database', async () => {
             poolStub.any.resolves([
                 {
-                    id: '62c460f0-426f-4339-addb-5aab3a4bbc14',
+                    id: '1',
                     title: 'Test 1',
                     state: true
                 },
                 {
-                    id: '94a9e91a-a914-41e6-8f1c-9dcc16c71cac',
+                    id: '2',
                     title: 'Test 2',
                     state: false
                 },
                 {
-                    id: '75002238-941d-4738-8728-a81eae96cb4f',
+                    id: '3',
                     title: 'Test 4',
                     state: true
                 },
                 {
-                    id: '9cad782a-3e3c-4523-94ba-7b892379f6a9',
+                    id: '4',
                     title: 'Test 5',
                     state: true
                 }
@@ -365,26 +358,26 @@ describe('DbConnection', () => {
             const result = await connection.getTodos();
 
             expect(poolStub.any.callCount).to.equal(1);
-            expect(normalizeQuery(poolStub.any.firstCall.args[0].sql)).to.equal('SELECT * FROM todos');
+            expect(normalizeQuery(poolStub.any.firstCall.args[0].sql)).to.equal('SELECT * FROM todos ORDER BY ID');
 
             expect(result).to.deep.equal([
                 {
-                    id: '62c460f0-426f-4339-addb-5aab3a4bbc14',
+                    id: '1',
                     title: 'Test 1',
                     state: true
                 },
                 {
-                    id: '94a9e91a-a914-41e6-8f1c-9dcc16c71cac',
+                    id: '2',
                     title: 'Test 2',
                     state: false
                 },
                 {
-                    id: '75002238-941d-4738-8728-a81eae96cb4f',
+                    id: '3',
                     title: 'Test 4',
                     state: true
                 },
                 {
-                    id: '9cad782a-3e3c-4523-94ba-7b892379f6a9',
+                    id: '4',
                     title: 'Test 5',
                     state: true
                 }
@@ -420,7 +413,7 @@ export class DbConnection {
 
     public async removeTodo(id: string) {
         try {
-            await this.pool.query(sql`DELETE FROM todos WHERE id=${`{${id}}`}`);
+            await this.pool.query(sql`DELETE FROM todos WHERE id=${`${id}`}`);
         } catch (error) {
             if (error instanceof ConnectionError) {
                 throw new Error('Connection to database failed.');
@@ -432,7 +425,7 @@ export class DbConnection {
 
     public async changeTodoState(id: string, state: boolean) {
         try {
-            await this.pool.query(sql`UPDATE todos SET state=${state} WHERE id=${`{${id}}`}`);
+            await this.pool.query(sql`UPDATE todos SET state=${state} WHERE id=${`${id}`}`);
         } catch (error) {
             if (error instanceof ConnectionError) {
                 throw new Error('Connection to database failed.');
@@ -445,7 +438,7 @@ export class DbConnection {
     public async getTodos(): Promise<TodoItem[]> {
         let result;
         try {
-            result = await this.pool.any<TodoItem>(sql`SELECT * FROM todos`);
+            result = await this.pool.any<TodoItem>(sql`SELECT * FROM todos ORDER BY id`);
         } catch (error) {
             if (error instanceof ConnectionError) {
                 throw new Error('Connection to database failed.');
@@ -493,9 +486,8 @@ connection.getTodos().then((result) => {
 ```sql
 CREATE DATABASE todolist;
 \connect -reuse-previous=on "dbname='todolist'"
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE todos (
-	id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+	id SERIAL NOT NULL PRIMARY KEY,
 	title varchar(50) NOT NULL,
 	state bool NOT NULL
 );
