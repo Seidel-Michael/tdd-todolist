@@ -10,7 +10,9 @@ npm install -g @angular/cli
 
 ```sh
 ng new
+```
 
+```
 What name would you like to use for the new workspace and initial project? tdd-todolist-frontend
 Would you like to add Angular routing? (y/N) y
 Which stylesheet format would you like to use? Less
@@ -23,26 +25,23 @@ cd tdd-todolist-frontend
 ng serve
 ```
 
-4. We start by creating the TodoItem class. As always we'll first create the stub class, implement the tests and do the implementation last.
+4. We start by creating the `TodoItem` interface. As this is only an interface, we won't need any tests. Interfaces in TypeScript won't be present in the compile JavaScript code.
 
 ```sh
-ng generate class models/TodoItem
+ng generate interface models/todo-item
 ```
 
 `models/todo-item.ts`
 
 ```ts
-export class TodoItem {
-  id: string;
+export interface TodoItem {
+  id?: string;
   title: string;
   state: boolean;
-
-  constructor(values: object = {}) {
-    throw new Error('Not Implemented!');
-  }
 }
 ```
 
+<!--
 `models/todo-item.spec.ts`
 
 ```ts
@@ -80,11 +79,11 @@ export class TodoItem {
     Object.assign(this, values);
   }
 }
-```
+``` -->
 
-6. In order to keep the base url of the api flexible we're gonna add the `baseApi` to the angular environment. This is not suitable for production enviroments because the base url is compiled into the app and not changeable later.
+5. In order to keep the base URL of the backend flexible we're gonna add the `baseApi` to the Angular environment. This is not suitable for production environments because the base URL is compiled into the app and cannot be changed unless the app is rebuilt.
 
-`environments/enviroment.test.ts`
+`environments/enviroment.ts`
 
 ```ts
 export const environment = {
@@ -93,7 +92,7 @@ export const environment = {
 };
 ```
 
-`environments/enviroment.ts`
+`environments/enviroment.prod.ts`
 
 ```ts
 export const environment = {
@@ -102,20 +101,20 @@ export const environment = {
 };
 ```
 
-7. We start with the todo service that is responsible for talking to our api.
+7. We start with the `TodoService` that is responsible for talking to our REST API.
 
 ```sh
-ng generate service services/Todo
+ng generate service services/todo
 ```
 
 `services/todo.service.ts`
 
 ```ts
-import { Injectable } from '@angular/core';
-import { TodoItem } from './../models/todo-item';
-import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { TodoItem } from '../models/todo-item';
 
 const API_URL = `${environment.baseApi}/api/v1/todos`;
 
@@ -146,12 +145,11 @@ export class TodoService {
 `services/todo.service.spec.ts`
 
 ```ts
-import { TestBed, getTestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
-
-import { TodoService } from './todo.service';
-import { TodoItem } from '../models/todo-item';
+import { TestBed } from '@angular/core/testing';
 import { environment } from 'src/environments/environment';
+import { TodoItem } from '../models/todo-item';
+import { TodoService } from './todo.service';
 
 describe('TodoServiceService', () => {
   let http: HttpTestingController;
@@ -160,12 +158,14 @@ describe('TodoServiceService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
 
-    http = getTestBed().get(HttpTestingController);
+    http = TestBed.get(HttpTestingController);
   });
 
-  it('should be created', () => {
-    const service: TodoService = TestBed.get(TodoService);
-    expect(service).toBeTruthy();
+  describe('general', () => {
+    it('should be created', () => {
+      const service: TodoService = TestBed.get(TodoService);
+      expect(service).toBeTruthy();
+    });
   });
 
   describe('addTodo', () => {
@@ -173,7 +173,7 @@ describe('TodoServiceService', () => {
 
     it('should call api endpoint correctly', done => {
       const service: TodoService = TestBed.get(TodoService);
-      const item = new TodoItem({ title: 'abc' });
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
       service.addTodo(item).subscribe(() => {
         expect().nothing();
         done();
@@ -188,7 +188,7 @@ describe('TodoServiceService', () => {
 
     it('should set correct body', done => {
       const service: TodoService = TestBed.get(TodoService);
-      const item = new TodoItem({ title: 'abc' });
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
       service.addTodo(item).subscribe(() => {
         expect().nothing();
         done();
@@ -202,11 +202,11 @@ describe('TodoServiceService', () => {
   });
 
   describe('removeTodo', () => {
-    const url = `${API_URL}/abc`;
+    const url = `${API_URL}/id`;
 
     it('should call api endpoint correctly', done => {
       const service: TodoService = TestBed.get(TodoService);
-      const item = new TodoItem({ id: 'abc' });
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
       service.removeTodo(item).subscribe(() => {
         expect().nothing();
         done();
@@ -224,7 +224,7 @@ describe('TodoServiceService', () => {
 
     it('should call api endpoint correctly', done => {
       const service: TodoService = TestBed.get(TodoService);
-      const item = new TodoItem({ title: 'abc', id: 'id', state: true });
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
       service.changeTodoState(item).subscribe(() => {
         expect().nothing();
         done();
@@ -239,7 +239,7 @@ describe('TodoServiceService', () => {
 
     it('should set correct body', done => {
       const service: TodoService = TestBed.get(TodoService);
-      const item = new TodoItem({ title: 'abc', id: 'id', state: true });
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
       service.changeTodoState(item).subscribe(() => {
         expect().nothing();
         done();
@@ -310,11 +310,11 @@ describe('TodoServiceService', () => {
 `services/todo.service.ts`
 
 ```ts
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { TodoItem } from '../models/todo-item';
 import { environment } from 'src/environments/environment';
+import { TodoItem } from '../models/todo-item';
 
 const API_URL = `${environment.baseApi}/api/v1/todos`;
 
@@ -324,37 +324,36 @@ const API_URL = `${environment.baseApi}/api/v1/todos`;
 export class TodoService {
   constructor(private http: HttpClient) {}
 
-  public addTodo(item: TodoItem): Observable<void> {
-    const headers: HttpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
+  addTodo(item: TodoItem): Observable<void> {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.post<void>(`${API_URL}`, { title: item.title }, { headers });
   }
 
-  public removeTodo(item: TodoItem): Observable<void> {
+  removeTodo(item: TodoItem): Observable<void> {
     return this.http.delete<void>(`${API_URL}/${item.id}`);
   }
 
-  public changeTodoState(item: TodoItem): Observable<void> {
-    const headers: HttpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
+  changeTodoState(item: TodoItem): Observable<void> {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.put<void>(`${API_URL}/${item.id}`, { state: item.state }, { headers });
   }
 
-  public getTodos(): Observable<TodoItem[]> {
+  getTodos(): Observable<TodoItem[]> {
     return this.http.get<TodoItem[]>(`${API_URL}`);
   }
 }
 ```
 
-9. Now it is time to create the components for the ui. We're starting with the `TodoListHeader` component..
+9. Now it is time to create the _Components_. We're starting with the `TodoListHeader` component.
 
 ```sh
-npm i -S @angular/forms
 ng generate component components/todo-list-header
 ```
 
 `components/todo-list-header/todo-list-header.component.ts`
 
 ```ts
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
 
 @Component({
@@ -363,7 +362,7 @@ import { TodoItem } from 'src/app/models/todo-item';
   styleUrls: ['./todo-list-header.component.less']
 })
 export class TodoListHeaderComponent implements OnInit {
-  newTodoItem: TodoItem = new TodoItem();
+  title = '';
 
   @Output()
   add: EventEmitter<TodoItem>;
@@ -383,48 +382,49 @@ export class TodoListHeaderComponent implements OnInit {
 `components/todo-list-header/todo-list-header.component.spec.ts`
 
 ```ts
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-
 import { TodoListHeaderComponent } from './todo-list-header.component';
 
 describe('TodoListHeaderComponent', () => {
   let component: TodoListHeaderComponent;
   let fixture: ComponentFixture<TodoListHeaderComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [TodoListHeaderComponent],
       imports: [FormsModule]
-    }).compileComponents();
-  }));
+    });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(TodoListHeaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('general', () => {
+    it('should create', () => {
+      expect(component).toBeTruthy();
+    });
   });
 
-  it('should emit add event if addTodo is called', () => {
-    const emitSpy = spyOn(component.add, 'emit');
-    component.newTodoItem.title = 'abc';
+  describe('addTodo', () => {
+    it('should emit add event if addTodo is called', () => {
+      const emitSpy = spyOn(component.add, 'emit');
+      component.title = 'abc';
 
-    component.addTodo();
+      component.addTodo();
 
-    expect(emitSpy).toHaveBeenCalledTimes(1);
-    expect(emitSpy.calls.mostRecent().args[0].title).toEqual('abc');
-  });
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy.calls.mostRecent().args[0].title).toEqual('abc');
+    });
 
-  it('should create new newTodo instance after addTodo was called', () => {
-    component.newTodoItem.title = 'abc';
+    it('should create new newTodo instance after addTodo was called', () => {
+      component.title = 'abc';
 
-    component.addTodo();
+      component.addTodo();
 
-    expect(component.newTodoItem.title).toEqual(undefined);
+      expect(component.title).toEqual('');
+    });
   });
 });
 ```
@@ -434,7 +434,7 @@ describe('TodoListHeaderComponent', () => {
 `components/todo-list-header/todo-list-header.component.ts`
 
 ```ts
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
 
 @Component({
@@ -443,7 +443,7 @@ import { TodoItem } from 'src/app/models/todo-item';
   styleUrls: ['./todo-list-header.component.less']
 })
 export class TodoListHeaderComponent implements OnInit {
-  newTodoItem: TodoItem = new TodoItem();
+  title = '';
 
   @Output()
   add: EventEmitter<TodoItem>;
@@ -455,8 +455,8 @@ export class TodoListHeaderComponent implements OnInit {
   ngOnInit() {}
 
   addTodo() {
-    this.add.emit(this.newTodoItem);
-    this.newTodoItem = new TodoItem();
+    this.add.emit({ title: this.title, state: false });
+    this.title = '';
   }
 }
 ```
@@ -470,7 +470,7 @@ export class TodoListHeaderComponent implements OnInit {
     class="new-todo-item"
     placeholder="What needs to be done?"
     autofocus=""
-    [(ngModel)]="newTodoItem.title"
+    [(ngModel)]="title"
     (keyup.enter)="addTodo()"
   />
 </header>
@@ -527,7 +527,7 @@ ng generate component components/todo-list-item
 `components/todo-list-item/todo-list-item.component.ts`
 
 ```ts
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
 
 @Component({
@@ -564,54 +564,59 @@ export class TodoListItemComponent implements OnInit {
 `components/todo-list-item/todo-list-item.component.spec.ts`
 
 ```ts
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { TodoListItemComponent } from './todo-list-item.component';
-import { TodoItem } from 'src/app/models/todo-item';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
+import { TodoItem } from 'src/app/models/todo-item';
+import { TodoListItemComponent } from './todo-list-item.component';
 
 describe('TodoListItemComponent', () => {
   let component: TodoListItemComponent;
   let fixture: ComponentFixture<TodoListItemComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [TodoListItemComponent],
       imports: [FormsModule]
-    }).compileComponents();
-  }));
+    });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(TodoListItemComponent);
     component = fixture.componentInstance;
-    component.todoItem = new TodoItem({});
+
+    component.todoItem = { id: 'id', state: true, title: 'abc' };
+
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('general', () => {
+    it('should create', () => {
+      expect(component).toBeTruthy();
+    });
   });
 
-  it('should emit remove event of removeTodo is called', () => {
-    const emitSpy = spyOn(component.remove, 'emit');
-    const item = new TodoItem({});
-    component.todoItem = item;
+  describe('removeTodo', () => {
+    it('should emit remove event of removeTodo is called', () => {
+      const emitSpy = spyOn(component.remove, 'emit');
+      const item: TodoItem = { id: 'abc', state: true, title: 'abc' };
+      component.todoItem = item;
 
-    component.removeTodo();
+      component.removeTodo();
 
-    expect(emitSpy).toHaveBeenCalledTimes(1);
-    expect(emitSpy).toHaveBeenCalledWith(item);
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenCalledWith(item);
+    });
   });
 
-  it('should emit toggleComplete event of toggleTodoComplete is called', () => {
-    const emitSpy = spyOn(component.toggleComplete, 'emit');
-    const item = new TodoItem({});
-    component.todoItem = item;
+  describe('toffleTodoComplete', () => {
+    it('should emit toggleComplete event of toggleTodoComplete is called', () => {
+      const emitSpy = spyOn(component.toggleComplete, 'emit');
+      const item: TodoItem = { id: 'abc', state: true, title: 'abc' };
+      component.todoItem = item;
 
-    component.toggleTodoComplete();
+      component.toggleTodoComplete();
 
-    expect(emitSpy).toHaveBeenCalledTimes(1);
-    expect(emitSpy).toHaveBeenCalledWith(item);
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenCalledWith(item);
+    });
   });
 });
 ```
@@ -621,7 +626,7 @@ describe('TodoListItemComponent', () => {
 `components/todo-list-item/todo-list-item.component.ts`
 
 ```ts
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
 
 @Component({
@@ -733,7 +738,7 @@ ng generate component components/todo-list
 `components/todo-list/todo-list.component.ts`
 
 ```ts
-import { Component, OnInit, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
 
 @Component({
@@ -771,53 +776,58 @@ export class TodoListComponent implements OnInit {
 `components/todo-list/todo-list.component.spec.ts`
 
 ```ts
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { TodoListComponent } from './todo-list.component';
-import { TodoListItemComponent } from './../todo-list-item/todo-list-item.component';
-import { TodoItem } from 'src/app/models/todo-item';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
+import { TodoItem } from 'src/app/models/todo-item';
+import { TodoListItemComponent } from './../todo-list-item/todo-list-item.component';
+import { TodoListComponent } from './todo-list.component';
 
 describe('TodoListComponent', () => {
   let component: TodoListComponent;
   let fixture: ComponentFixture<TodoListComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [TodoListComponent, TodoListItemComponent],
       imports: [FormsModule]
-    }).compileComponents();
-  }));
+    });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(TodoListComponent);
     component = fixture.componentInstance;
+
     component.todoItems = [];
+
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('general', () => {
+    it('should create', () => {
+      expect(component).toBeTruthy();
+    });
   });
 
-  it('should emit remove event if onRemoveTodo is called', () => {
-    const emitSpy = spyOn(component.remove, 'emit');
-    const item = new TodoItem({});
+  describe('onRemoveTodo', () => {
+    it('should emit remove event if onRemoveTodo is called', () => {
+      const emitSpy = spyOn(component.remove, 'emit');
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
 
-    component.onRemoveTodo(item);
+      component.onRemoveTodo(item);
 
-    expect(emitSpy).toHaveBeenCalledTimes(1);
-    expect(emitSpy).toHaveBeenCalledWith(item);
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenCalledWith(item);
+    });
   });
 
-  it('should emit toggleComplete event if onToggleTodoComplete is called', () => {
-    const emitSpy = spyOn(component.toggleComplete, 'emit');
-    const item = new TodoItem({});
+  describe('onToggleTodoComplete', () => {
+    it('should emit toggleComplete event if onToggleTodoComplete is called', () => {
+      const emitSpy = spyOn(component.toggleComplete, 'emit');
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
 
-    component.onToggleTodoComplete(item);
+      component.onToggleTodoComplete(item);
 
-    expect(emitSpy).toHaveBeenCalledTimes(1);
-    expect(emitSpy).toHaveBeenCalledWith(item);
+      expect(emitSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenCalledWith(item);
+    });
   });
 });
 ```
@@ -827,7 +837,7 @@ describe('TodoListComponent', () => {
 `components/todo-list/todo-list.component.ts`
 
 ```ts
-import { Component, OnInit, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
 
 @Component({
@@ -866,12 +876,15 @@ export class TodoListComponent implements OnInit {
 
 ```ts
 <section class="main" *ngIf="todoItems && todoItems.length > 0">
-    <ul class="todo-list">
-        <li *ngFor="let todoItem of todoItems">
-            <app-todo-list-item [todoItem]="todoItem" (toggleComplete)="onToggleTodoComplete($event)"
-                (remove)="onRemoveTodo($event)"></app-todo-list-item>
-        </li>
-    </ul>
+  <ul class="todo-list">
+    <li *ngFor="let todoItem of todoItems">
+      <app-todo-list-item
+        [todoItem]="todoItem"
+        (toggleComplete)="onToggleTodoComplete($event)"
+        (remove)="onRemoveTodo($event)"
+      ></app-todo-list-item>
+    </li>
+  </ul>
 </section>
 ```
 
@@ -938,16 +951,15 @@ export class TodoListComponent implements OnInit {
 `app.module.ts`
 
 ```ts
-import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-
+import { FormsModule } from '@angular/forms';
+import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TodoListHeaderComponent } from './components/todo-list-header/todo-list-header.component';
 import { TodoListItemComponent } from './components/todo-list-item/todo-list-item.component';
 import { TodoListComponent } from './components/todo-list/todo-list.component';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [AppComponent, TodoListHeaderComponent, TodoListItemComponent, TodoListComponent],
@@ -962,8 +974,8 @@ export class AppModule {}
 
 ```ts
 import { Component, OnInit } from '@angular/core';
-import { TodoService } from './services/todo.service';
 import { TodoItem } from './models/todo-item';
+import { TodoService } from './services/todo.service';
 
 @Component({
   selector: 'app-root',
@@ -994,17 +1006,17 @@ export class AppComponent implements OnInit {
 `app.component.spec.ts`
 
 ```ts
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
 import { AppComponent } from './app.component';
+import { TodoListHeaderComponent } from './components/todo-list-header/todo-list-header.component';
+import { TodoListItemComponent } from './components/todo-list-item/todo-list-item.component';
+import { TodoListComponent } from './components/todo-list/todo-list.component';
 import { TodoItem } from './models/todo-item';
 import { TodoService } from './services/todo.service';
-import { of } from 'rxjs';
-import { TodoListHeaderComponent } from './components/todo-list-header/todo-list-header.component';
-import { TodoListComponent } from './components/todo-list/todo-list.component';
-import { TodoListItemComponent } from './components/todo-list-item/todo-list-item.component';
-import { FormsModule } from '@angular/forms';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 const EMPTY = of(('' as unknown) as void);
 
@@ -1027,14 +1039,16 @@ describe('AppComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create the app', () => {
-    expect(app).toBeTruthy();
+  describe('general', () => {
+    it('should create the app', () => {
+      expect(app).toBeTruthy();
+    });
   });
 
   describe('onAddTodo', () => {
     it('should call TodoService.addTodo if called', () => {
       const addSpy = spyOn(todoService, 'addTodo').and.returnValue(EMPTY);
-      const item = new TodoItem({});
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
 
       app.onAddTodo(item);
 
@@ -1044,7 +1058,7 @@ describe('AppComponent', () => {
 
     it('should refresh todoItems if called', () => {
       const addSpy = spyOn(todoService, 'addTodo').and.returnValue(EMPTY);
-      const item = new TodoItem({});
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
       const getSpy = spyOn(todoService, 'getTodos').and.returnValue(of([item]));
 
       app.onAddTodo(item);
@@ -1057,7 +1071,7 @@ describe('AppComponent', () => {
   describe('onToggleTodoComplete', () => {
     it('should call TodoService.addTodo if called', () => {
       const changeSpy = spyOn(todoService, 'changeTodoState').and.returnValue(EMPTY);
-      const item = new TodoItem({});
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
 
       app.onToggleTodoComplete(item);
 
@@ -1067,7 +1081,7 @@ describe('AppComponent', () => {
 
     it('should refresh todoItems if called', () => {
       const changeSpy = spyOn(todoService, 'changeTodoState').and.returnValue(EMPTY);
-      const item = new TodoItem({});
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
       const getSpy = spyOn(todoService, 'getTodos').and.returnValue(of([item]));
 
       app.onToggleTodoComplete(item);
@@ -1080,7 +1094,7 @@ describe('AppComponent', () => {
   describe('onRemoveTodo', () => {
     it('should call TodoService.addTodo if called', () => {
       const removeSpy = spyOn(todoService, 'removeTodo').and.returnValue(EMPTY);
-      const item = new TodoItem({});
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
 
       app.onRemoveTodo(item);
 
@@ -1090,7 +1104,7 @@ describe('AppComponent', () => {
 
     it('should refresh todoItems if called', () => {
       const removeSpy = spyOn(todoService, 'removeTodo').and.returnValue(EMPTY);
-      const item = new TodoItem({});
+      const item: TodoItem = { id: 'id', state: true, title: 'abc' };
       const getSpy = spyOn(todoService, 'getTodos').and.returnValue(of([item]));
 
       app.onRemoveTodo(item);
@@ -1108,8 +1122,8 @@ describe('AppComponent', () => {
 
 ```ts
 import { Component, OnInit } from '@angular/core';
-import { TodoService } from './services/todo.service';
 import { TodoItem } from './models/todo-item';
+import { TodoService } from './services/todo.service';
 
 @Component({
   selector: 'app-root',
