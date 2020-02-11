@@ -1,11 +1,10 @@
 # Setup
 
-1. Ensure that you have the Angular CLI installed gloablly. 
+1. Ensure that you have the Angular CLI installed gloablly.
 
 ```sh
 npm install -g @angular/cli
 ```
-
 
 2. Create a new Angular project with the wizzard.
 
@@ -31,19 +30,21 @@ ng generate class models/TodoItem
 ```
 
 `models/todo-item.ts`
+
 ```ts
 export class TodoItem {
-    id: string;
-    title: string;
-    state: boolean;
+  id: string;
+  title: string;
+  state: boolean;
 
-    constructor(values: object = {}) {
-        throw new Error('Not Implemented!');
-    }
+  constructor(values: object = {}) {
+    throw new Error('Not Implemented!');
+  }
 }
 ```
 
 `models/todo-item.spec.ts`
+
 ```ts
 import { TodoItem } from './todo-item';
 
@@ -54,7 +55,7 @@ describe('TodoItem', () => {
 
   it('should set values in constructor', () => {
     let todo = new TodoItem({
-      id:'abc',
+      id: 'abc',
       title: 'hello',
       state: true
     });
@@ -68,21 +69,23 @@ describe('TodoItem', () => {
 5. Run the tests with `ng test` and ensure that they are red. Then we can do the implementation.
 
 `models/todo-item.ts`
+
 ```ts
 export class TodoItem {
-    id: string;
-    title: string;
-    state: boolean;
+  id: string;
+  title: string;
+  state: boolean;
 
-    constructor(values: object = {}) {
-        Object.assign(this, values);
-    }
+  constructor(values: object = {}) {
+    Object.assign(this, values);
+  }
 }
 ```
 
 6. In order to keep the base url of the api flexible we're gonna add the `baseApi` to the angular environment. This is not suitable for production enviroments because the base url is compiled into the app and not changeable later.
 
 `environments/enviroment.test.ts`
+
 ```ts
 export const environment = {
   production: false,
@@ -91,6 +94,7 @@ export const environment = {
 ```
 
 `environments/enviroment.ts`
+
 ```ts
 export const environment = {
   production: true,
@@ -105,6 +109,7 @@ ng generate service services/Todo
 ```
 
 `services/todo.service.ts`
+
 ```ts
 import { Injectable } from '@angular/core';
 import { TodoItem } from './../models/todo-item';
@@ -118,8 +123,7 @@ const API_URL = `${environment.baseApi}/api/v1/todos`;
   providedIn: 'root'
 })
 export class TodoService {
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   public addTodo(item: TodoItem): Observable<void> {
     throw new Error('Not Implemented!');
@@ -140,6 +144,7 @@ export class TodoService {
 ```
 
 `services/todo.service.spec.ts`
+
 ```ts
 import { TestBed, getTestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
@@ -166,7 +171,7 @@ describe('TodoServiceService', () => {
   describe('addTodo', () => {
     const url = `${API_URL}`;
 
-    it('should call api endpoint correctly', (done) => {
+    it('should call api endpoint correctly', done => {
       const service: TodoService = TestBed.get(TodoService);
       const item = new TodoItem({ title: 'abc' });
       service.addTodo(item).subscribe(() => {
@@ -181,7 +186,7 @@ describe('TodoServiceService', () => {
       http.verify();
     });
 
-    it('should set correct body', (done) => {
+    it('should set correct body', done => {
       const service: TodoService = TestBed.get(TodoService);
       const item = new TodoItem({ title: 'abc' });
       service.addTodo(item).subscribe(() => {
@@ -199,7 +204,7 @@ describe('TodoServiceService', () => {
   describe('removeTodo', () => {
     const url = `${API_URL}/abc`;
 
-    it('should call api endpoint correctly', (done) => {
+    it('should call api endpoint correctly', done => {
       const service: TodoService = TestBed.get(TodoService);
       const item = new TodoItem({ id: 'abc' });
       service.removeTodo(item).subscribe(() => {
@@ -217,7 +222,7 @@ describe('TodoServiceService', () => {
   describe('changeTodoState', () => {
     const url = `${API_URL}/id`;
 
-    it('should call api endpoint correctly', (done) => {
+    it('should call api endpoint correctly', done => {
       const service: TodoService = TestBed.get(TodoService);
       const item = new TodoItem({ title: 'abc', id: 'id', state: true });
       service.changeTodoState(item).subscribe(() => {
@@ -232,7 +237,7 @@ describe('TodoServiceService', () => {
       http.verify();
     });
 
-    it('should set correct body', (done) => {
+    it('should set correct body', done => {
       const service: TodoService = TestBed.get(TodoService);
       const item = new TodoItem({ title: 'abc', id: 'id', state: true });
       service.changeTodoState(item).subscribe(() => {
@@ -272,7 +277,7 @@ describe('TodoServiceService', () => {
       }
     ];
 
-    it('should call api endpoint correctly', (done) => {
+    it('should call api endpoint correctly', done => {
       const service: TodoService = TestBed.get(TodoService);
       service.getTodos().subscribe(() => {
         expect().nothing();
@@ -285,9 +290,9 @@ describe('TodoServiceService', () => {
       http.verify();
     });
 
-    it('should resolve with response', (done) => {
+    it('should resolve with response', done => {
       const service: TodoService = TestBed.get(TodoService);
-      service.getTodos().subscribe((res) => {
+      service.getTodos().subscribe(res => {
         expect(res).toEqual(response);
         done();
       });
@@ -298,13 +303,12 @@ describe('TodoServiceService', () => {
     });
   });
 });
-
 ```
-
 
 8. The tests schould now be red and we can start with the implemenation.
 
 `services/todo.service.ts`
+
 ```ts
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -318,14 +322,10 @@ const API_URL = `${environment.baseApi}/api/v1/todos`;
   providedIn: 'root'
 })
 export class TodoService {
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   public addTodo(item: TodoItem): Observable<void> {
-    const headers: HttpHeaders = new HttpHeaders().set(
-      'Content-Type',
-      'application/json'
-    );
+    const headers: HttpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.post<void>(`${API_URL}`, { title: item.title }, { headers });
   }
 
@@ -334,10 +334,7 @@ export class TodoService {
   }
 
   public changeTodoState(item: TodoItem): Observable<void> {
-    const headers: HttpHeaders = new HttpHeaders().set(
-      'Content-Type',
-      'application/json'
-    );
+    const headers: HttpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.put<void>(`${API_URL}/${item.id}`, { state: item.state }, { headers });
   }
 
@@ -345,7 +342,6 @@ export class TodoService {
     return this.http.get<TodoItem[]>(`${API_URL}`);
   }
 }
-
 ```
 
 9. Now it is time to create the components for the ui. We're starting with the `TodoListHeader` component..
@@ -356,6 +352,7 @@ ng generate component components/todo-list-header
 ```
 
 `components/todo-list-header/todo-list-header.component.ts`
+
 ```ts
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
@@ -366,7 +363,6 @@ import { TodoItem } from 'src/app/models/todo-item';
   styleUrls: ['./todo-list-header.component.less']
 })
 export class TodoListHeaderComponent implements OnInit {
-
   newTodoItem: TodoItem = new TodoItem();
 
   @Output()
@@ -376,23 +372,19 @@ export class TodoListHeaderComponent implements OnInit {
     this.add = new EventEmitter();
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
-  addTodo()
-  {
+  addTodo() {
     throw new Error('Not Implemented!');
   }
-
 }
-
 ```
 
 `components/todo-list-header/todo-list-header.component.spec.ts`
+
 ```ts
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-
 
 import { TodoListHeaderComponent } from './todo-list-header.component';
 
@@ -404,8 +396,7 @@ describe('TodoListHeaderComponent', () => {
     TestBed.configureTestingModule({
       declarations: [TodoListHeaderComponent],
       imports: [FormsModule]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -436,13 +427,12 @@ describe('TodoListHeaderComponent', () => {
     expect(component.newTodoItem.title).toEqual(undefined);
   });
 });
-
 ```
-
 
 10. After verifying that the test are red we can start implementing the component and add the html and less files. We're not gonna test the HTML file. It is possible to check the databinding in unit tests. We do this later with e2e tests.
 
 `components/todo-list-header/todo-list-header.component.ts`
+
 ```ts
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
@@ -453,7 +443,6 @@ import { TodoItem } from 'src/app/models/todo-item';
   styleUrls: ['./todo-list-header.component.less']
 })
 export class TodoListHeaderComponent implements OnInit {
-
   newTodoItem: TodoItem = new TodoItem();
 
   @Output()
@@ -463,68 +452,71 @@ export class TodoListHeaderComponent implements OnInit {
     this.add = new EventEmitter();
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   addTodo() {
     this.add.emit(this.newTodoItem);
     this.newTodoItem = new TodoItem();
   }
-
 }
-
 ```
 
 `components/todo-list-header/todo-list-header.component.html`
+
 ```html
 <header class="header">
-    <h1>Todos</h1>
-    <input class="new-todo-item" placeholder="What needs to be done?" autofocus="" [(ngModel)]="newTodoItem.title"
-        (keyup.enter)="addTodo()">
+  <h1>Todos</h1>
+  <input
+    class="new-todo-item"
+    placeholder="What needs to be done?"
+    autofocus=""
+    [(ngModel)]="newTodoItem.title"
+    (keyup.enter)="addTodo()"
+  />
 </header>
 ```
 
 `components/todo-list-header/todo-list-header.component.less`
+
 ```less
 h1 {
-	top: -155px;
-	width: 100%;
-	font-size: 100px;
-	font-weight: 100;
-	text-align: center;
-	color: rgba(0, 0, 0, 1);
-	-webkit-text-rendering: optimizeLegibility;
-	-moz-text-rendering: optimizeLegibility;
-	text-rendering: optimizeLegibility;
+  top: -155px;
+  width: 100%;
+  font-size: 100px;
+  font-weight: 100;
+  text-align: center;
+  color: rgba(0, 0, 0, 1);
+  -webkit-text-rendering: optimizeLegibility;
+  -moz-text-rendering: optimizeLegibility;
+  text-rendering: optimizeLegibility;
 }
 
 .new-todo-item,
 .edit {
-	position: relative;
-	margin: 0;
-	width: 100%;
-	font-size: 24px;
-	font-family: inherit;
-	font-weight: inherit;
-	line-height: 1.4em;
-	border: 0;
-	color: inherit;
-	padding: 6px;
-	border: 1px solid #999;
-	box-shadow: inset 0 -1px 5px 0 rgba(0, 0, 0, 0.2);
-	box-sizing: border-box;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  position: relative;
+  margin: 0;
+  width: 100%;
+  font-size: 24px;
+  font-family: inherit;
+  font-weight: inherit;
+  line-height: 1.4em;
+  border: 0;
+  color: inherit;
+  padding: 6px;
+  border: 1px solid #999;
+  box-shadow: inset 0 -1px 5px 0 rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .new-todo-item {
-	padding: 16px 16px 16px 16px;
-	border: none;
-	background: rgba(0, 0, 0, 0.003);
-	box-shadow: inset 0 -2px 1px rgba(0,0,0,0.03);
+  padding: 16px 16px 16px 16px;
+  border: none;
+  background: rgba(0, 0, 0, 0.003);
+  box-shadow: inset 0 -2px 1px rgba(0, 0, 0, 0.03);
 }
 ```
-
 
 11. The next component is the `TodoListItem` component.
 
@@ -533,6 +525,7 @@ ng generate component components/todo-list-item
 ```
 
 `components/todo-list-item/todo-list-item.component.ts`
+
 ```ts
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
@@ -543,7 +536,6 @@ import { TodoItem } from 'src/app/models/todo-item';
   styleUrls: ['./todo-list-item.component.less']
 })
 export class TodoListItemComponent implements OnInit {
-
   @Input() todoItem: TodoItem;
 
   @Output()
@@ -557,8 +549,7 @@ export class TodoListItemComponent implements OnInit {
     this.toggleComplete = new EventEmitter();
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   toggleTodoComplete() {
     throw new Error('Not Implemented!');
@@ -567,12 +558,11 @@ export class TodoListItemComponent implements OnInit {
   removeTodo() {
     throw new Error('Not Implemented!');
   }
-
 }
-
 ```
 
 `components/todo-list-item/todo-list-item.component.spec.ts`
+
 ```ts
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -588,8 +578,7 @@ describe('TodoListItemComponent', () => {
     TestBed.configureTestingModule({
       declarations: [TodoListItemComponent],
       imports: [FormsModule]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -625,12 +614,12 @@ describe('TodoListItemComponent', () => {
     expect(emitSpy).toHaveBeenCalledWith(item);
   });
 });
-
 ```
 
 12. The `TodoListItem` component implementation.
 
 `components/todo-list-item/todo-list-item.component.ts`
+
 ```ts
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
@@ -641,7 +630,6 @@ import { TodoItem } from 'src/app/models/todo-item';
   styleUrls: ['./todo-list-item.component.less']
 })
 export class TodoListItemComponent implements OnInit {
-
   @Input() todoItem: TodoItem;
 
   @Output()
@@ -655,8 +643,7 @@ export class TodoListItemComponent implements OnInit {
     this.toggleComplete = new EventEmitter();
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   toggleTodoComplete() {
     this.toggleComplete.emit(this.todoItem);
@@ -665,78 +652,76 @@ export class TodoListItemComponent implements OnInit {
   removeTodo() {
     this.remove.emit(this.todoItem);
   }
-
 }
-
 ```
 
 `components/todo-list-item/todo-list-item.component.html`
+
 ```html
 <div class="view" [class.completed]="todoItem.state">
-    <input class="toggle" type="checkbox" (change)="toggleTodoComplete()" [(ngModel)]="todoItem.state">
-    <label>{{todoItem.title}}</label>
-    <button class="destroy" (click)="removeTodo()">x</button>
+  <input class="toggle" type="checkbox" (change)="toggleTodoComplete()" [(ngModel)]="todoItem.state" />
+  <label>{{todoItem.title}}</label>
+  <button class="destroy" (click)="removeTodo()">x</button>
 </div>
 ```
 
 `components/todo-list-item/todo-list-item.component.less`
+
 ```less
 label {
-	word-break: break-all;
-	line-height: 1.2;
-	transition: color 0.4s;
+  word-break: break-all;
+  line-height: 1.2;
+  transition: color 0.4s;
 }
 
-
 .completed label {
-	color: #d9d9d9;
-	text-decoration: line-through;
+  color: #d9d9d9;
+  text-decoration: line-through;
 }
 
 .toggle {
-	width: 30px;
-	height: 25px;
-	text-align: center;
-	border: none; /* Mobile Safari */
+  width: 30px;
+  height: 25px;
+  text-align: center;
+  border: none; /* Mobile Safari */
 }
 
 .toggle:checked:before {
-	color: #737373;
+  color: #737373;
 }
 
 button {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	background: none;
-	font-size: 100%;
-	vertical-align: baseline;
-	font-family: inherit;
-	font-weight: inherit;
-	color: inherit;
-	-webkit-appearance: none;
-	appearance: none;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 100%;
+  vertical-align: baseline;
+  font-family: inherit;
+  font-weight: inherit;
+  color: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .destroy {
-	top: 0;
-	right: 10px;
-	bottom: 0;
-	width: 40px;
-	height: 40px;
-	margin: auto 0;
-	font-size: 30px;
-	color: #868686;
-	margin-bottom: 11px;
-    transition: color 0.2s ease-out;
+  top: 0;
+  right: 10px;
+  bottom: 0;
+  width: 40px;
+  height: 40px;
+  margin: auto 0;
+  font-size: 30px;
+  color: #868686;
+  margin-bottom: 11px;
+  transition: color 0.2s ease-out;
 }
 
 .destroy:hover {
-    color: #ce6f72;
+  color: #ce6f72;
 }
-
 ```
 
 13. The last component to create is the `TodoList` component.
@@ -746,6 +731,7 @@ ng generate component components/todo-list
 ```
 
 `components/todo-list/todo-list.component.ts`
+
 ```ts
 import { Component, OnInit, EventEmitter, Input, Output } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
@@ -756,7 +742,6 @@ import { TodoItem } from 'src/app/models/todo-item';
   styleUrls: ['./todo-list.component.less']
 })
 export class TodoListComponent implements OnInit {
-
   @Input()
   todoItems: TodoItem[];
 
@@ -771,8 +756,7 @@ export class TodoListComponent implements OnInit {
     this.toggleComplete = new EventEmitter();
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onToggleTodoComplete(todoItem: TodoItem) {
     throw new Error('Not Implement');
@@ -781,12 +765,11 @@ export class TodoListComponent implements OnInit {
   onRemoveTodo(todoItem: TodoItem) {
     throw new Error('Not Implement');
   }
-
 }
-
 ```
 
 `components/todo-list/todo-list.component.spec.ts`
+
 ```ts
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -803,8 +786,7 @@ describe('TodoListComponent', () => {
     TestBed.configureTestingModule({
       declarations: [TodoListComponent, TodoListItemComponent],
       imports: [FormsModule]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -838,12 +820,12 @@ describe('TodoListComponent', () => {
     expect(emitSpy).toHaveBeenCalledWith(item);
   });
 });
-
 ```
 
 14. The `TodoList` component implementation
 
 `components/todo-list/todo-list.component.ts`
+
 ```ts
 import { Component, OnInit, EventEmitter, Input, Output } from '@angular/core';
 import { TodoItem } from 'src/app/models/todo-item';
@@ -854,8 +836,6 @@ import { TodoItem } from 'src/app/models/todo-item';
   styleUrls: ['./todo-list.component.less']
 })
 export class TodoListComponent implements OnInit {
-
-
   @Input()
   todoItems: TodoItem[];
 
@@ -870,8 +850,7 @@ export class TodoListComponent implements OnInit {
     this.toggleComplete = new EventEmitter();
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onToggleTodoComplete(todoItem: TodoItem) {
     this.toggleComplete.emit(todoItem);
@@ -880,12 +859,11 @@ export class TodoListComponent implements OnInit {
   onRemoveTodo(todoItem: TodoItem) {
     this.remove.emit(todoItem);
   }
-
 }
-
 ```
 
 `components/todo-list/todo-list.component.html`
+
 ```ts
 <section class="main" *ngIf="todoItems && todoItems.length > 0">
     <ul class="todo-list">
@@ -898,67 +876,67 @@ export class TodoListComponent implements OnInit {
 ```
 
 `components/todo-list/todo-list.component.less`
+
 ```less
 .todo-list {
-	margin: 0;
-	padding: 0;
-	list-style: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .todo-list li {
-	position: relative;
-	font-size: 24px;
-	border-bottom: 1px solid #ededed;
+  position: relative;
+  font-size: 24px;
+  border-bottom: 1px solid #ededed;
 }
 
 .todo-list li:last-child {
-	border-bottom: none;
+  border-bottom: none;
 }
 
 .todo-list li.editing {
-	border-bottom: none;
-	padding: 0;
+  border-bottom: none;
+  padding: 0;
 }
 
 .todo-list li.editing .edit {
-	display: block;
-	width: 506px;
-	padding: 12px 16px;
-	margin: 0 0 0 43px;
+  display: block;
+  width: 506px;
+  padding: 12px 16px;
+  margin: 0 0 0 43px;
 }
 
 .todo-list li.editing .view {
-	display: none;
+  display: none;
 }
 
 .todo-list li .toggle {
-	text-align: center;
-	width: 40px;
-	/* auto, since non-WebKit browsers doesn't support input styling */
-	height: auto;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	margin: auto 0;
-	border: none; /* Mobile Safari */
-	-webkit-appearance: none;
-	appearance: none;
+  text-align: center;
+  width: 40px;
+  /* auto, since non-WebKit browsers doesn't support input styling */
+  height: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  border: none; /* Mobile Safari */
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .todo-list li .toggle:after {
-	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-10 -18 100 135"><circle cx="50" cy="50" r="50" fill="none" stroke="#ededed" stroke-width="3"/></svg>');
+  content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-10 -18 100 135"><circle cx="50" cy="50" r="50" fill="none" stroke="#ededed" stroke-width="3"/></svg>');
 }
 
 .todo-list li .toggle:checked:after {
-	content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-10 -18 100 135"><circle cx="50" cy="50" r="50" fill="none" stroke="#bddad5" stroke-width="3"/><path fill="#5dc2af" d="M72 25L42 71 27 56l-4 4 20 20 34-52z"/></svg>');
+  content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-10 -18 100 135"><circle cx="50" cy="50" r="50" fill="none" stroke="#bddad5" stroke-width="3"/><path fill="#5dc2af" d="M72 25L42 71 27 56l-4 4 20 20 34-52z"/></svg>');
 }
-
 ```
-
 
 15. In the last steps we're gonna bring everthing together in the app component.
 
 `app.module.ts`
+
 ```ts
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -972,26 +950,16 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    TodoListHeaderComponent,
-    TodoListItemComponent,
-    TodoListComponent
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    FormsModule,
-    HttpClientModule
-  ],
+  declarations: [AppComponent, TodoListHeaderComponent, TodoListItemComponent, TodoListComponent],
+  imports: [BrowserModule, AppRoutingModule, FormsModule, HttpClientModule],
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
-
+export class AppModule {}
 ```
 
 `app.component.ts`
+
 ```ts
 import { Component, OnInit } from '@angular/core';
 import { TodoService } from './services/todo.service';
@@ -1005,12 +973,9 @@ import { TodoItem } from './models/todo-item';
 export class AppComponent implements OnInit {
   todoItems: TodoItem[];
 
-  constructor(private todoService: TodoService) {
+  constructor(private todoService: TodoService) {}
 
-  }
-
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onAddTodo(todoItem: TodoItem) {
     throw new Error('Not Implemented!');
@@ -1024,24 +989,24 @@ export class AppComponent implements OnInit {
     throw new Error('Not Implemented!');
   }
 }
-
 ```
 
 `app.component.spec.ts`
+
 ```ts
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { TodoItem } from './models/todo-item';
 import { TodoService } from './services/todo.service';
-import { of, } from 'rxjs';
+import { of } from 'rxjs';
 import { TodoListHeaderComponent } from './components/todo-list-header/todo-list-header.component';
 import { TodoListComponent } from './components/todo-list/todo-list.component';
 import { TodoListItemComponent } from './components/todo-list-item/todo-list-item.component';
 import { FormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-const EMPTY = of('' as unknown as void);
+const EMPTY = of(('' as unknown) as void);
 
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
@@ -1050,17 +1015,8 @@ describe('AppComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule,
-        FormsModule,
-        HttpClientTestingModule
-      ],
-      declarations: [
-        AppComponent,
-        TodoListHeaderComponent,
-        TodoListComponent,
-        TodoListItemComponent
-      ]
+      imports: [RouterTestingModule, FormsModule, HttpClientTestingModule],
+      declarations: [AppComponent, TodoListHeaderComponent, TodoListComponent, TodoListItemComponent]
     });
 
     fixture = TestBed.createComponent(AppComponent);
@@ -1070,7 +1026,6 @@ describe('AppComponent', () => {
 
     fixture.detectChanges();
   });
-
 
   it('should create the app', () => {
     expect(app).toBeTruthy();
@@ -1145,13 +1100,12 @@ describe('AppComponent', () => {
     });
   });
 });
-
 ```
-
 
 16. The last implementation.
 
 `app.component.ts`
+
 ```ts
 import { Component, OnInit } from '@angular/core';
 import { TodoService } from './services/todo.service';
@@ -1165,12 +1119,10 @@ import { TodoItem } from './models/todo-item';
 export class AppComponent implements OnInit {
   todoItems: TodoItem[];
 
-  constructor(private todoService: TodoService) {
-
-  }
+  constructor(private todoService: TodoService) {}
 
   private getTodos() {
-    this.todoService.getTodos().subscribe(result => this.todoItems = result);
+    this.todoService.getTodos().subscribe(result => (this.todoItems = result));
   }
 
   ngOnInit() {
