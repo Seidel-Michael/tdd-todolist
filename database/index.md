@@ -143,21 +143,22 @@ class DbConnection {
 `src/db/db-connection.spec.ts`
 
 ```ts
-import { DbConnection } from './db-connection';
-import { expect } from 'chai';
-import chai from 'chai';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
-var chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
+import { ConnectionError, DatabasePoolType } from 'slonik';
 import { normalizeQuery } from '../../test-helper/normalizeQuery';
+import { DbConnection } from './db-connection';
 
-import { DatabasePoolType, ConnectionError } from 'slonik';
+chai.use(chaiAsPromised);
 
 describe('DbConnection', () => {
+  /* tslint:disable-next-line no-any */
   let poolStub: any;
   let connection: DbConnection;
+
   beforeEach(() => {
-    poolStub = <DatabasePoolType>{};
+    poolStub = {} as DatabasePoolType;
     poolStub.query = sinon.stub();
     poolStub.any = sinon.stub();
 
@@ -236,21 +237,22 @@ export class DbConnection {
 `src/db/db-connection.spec.ts`
 
 ```ts
-import { DbConnection } from './db-connection';
-import { expect } from 'chai';
-import chai from 'chai';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
-var chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
+import { ConnectionError, DatabasePoolType } from 'slonik';
 import { normalizeQuery } from '../../test-helper/normalizeQuery';
+import { DbConnection } from './db-connection';
 
-import { DatabasePoolType, ConnectionError } from 'slonik';
+chai.use(chaiAsPromised);
 
 describe('DbConnection', () => {
+  /* tslint:disable-next-line no-any */
   let poolStub: any;
   let connection: DbConnection;
+
   beforeEach(() => {
-    poolStub = <DatabasePoolType>{};
+    poolStub = {} as DatabasePoolType;
     poolStub.query = sinon.stub();
     poolStub.any = sinon.stub();
 
@@ -365,7 +367,7 @@ describe('DbConnection', () => {
       const result = await connection.getTodos();
 
       expect(poolStub.any.callCount).to.equal(1);
-      expect(normalizeQuery(poolStub.any.firstCall.args[0].sql)).to.equal('SELECT * FROM todos ORDER BY ID');
+      expect(normalizeQuery(poolStub.any.firstCall.args[0].sql)).to.equal('SELECT * FROM todos ORDER BY id');
 
       expect(result).to.deep.equal([
         {
@@ -397,7 +399,7 @@ describe('DbConnection', () => {
 `src/db/db-connection.ts`
 
 ```ts
-import { DatabasePoolType, sql, ConnectionError } from 'slonik';
+import { ConnectionError, DatabasePoolType, sql } from 'slonik';
 import { TodoItem } from '../models/todo-item';
 
 export class DbConnection {
@@ -407,7 +409,7 @@ export class DbConnection {
     this.pool = pool;
   }
 
-  public async addTodo(title: string) {
+  async addTodo(title: string) {
     try {
       await this.pool.query(sql`INSERT INTO todos(title, state) VALUES (${title}, true)`);
     } catch (error) {
@@ -419,7 +421,7 @@ export class DbConnection {
     }
   }
 
-  public async removeTodo(id: string) {
+  async removeTodo(id: string) {
     try {
       await this.pool.query(sql`DELETE FROM todos WHERE id=${`${id}`}`);
     } catch (error) {
@@ -431,7 +433,7 @@ export class DbConnection {
     }
   }
 
-  public async changeTodoState(id: string, state: boolean) {
+  async changeTodoState(id: string, state: boolean) {
     try {
       await this.pool.query(sql`UPDATE todos SET state=${state} WHERE id=${`${id}`}`);
     } catch (error) {
@@ -443,8 +445,9 @@ export class DbConnection {
     }
   }
 
-  public async getTodos(): Promise<TodoItem[]> {
+  async getTodos(): Promise<TodoItem[]> {
     let result;
+
     try {
       result = await this.pool.any<TodoItem>(sql`SELECT * FROM todos ORDER BY id`);
     } catch (error) {
