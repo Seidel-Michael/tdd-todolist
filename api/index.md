@@ -10,16 +10,16 @@ npm i -D @types/koa @types/koa-router @types/koa-bodyparser @types/koa-logger ch
 2. The folder structure might seem a bit exaggerated for a small project like this. But this structure is practical if the project is growing.
 
 ```
-src
-|-
-  |-api
-    |- controllers
-      |- todo-controller.ts
-    |- routes
-      |- todo-routes.ts
-    |- tests
-      |- todo.spec.ts
-  |- api.ts
+project-root/
+└── src/
+    ├── api/
+    │   ├── controllers/
+    │   │   └──  todo-controller.ts
+    │   ├── routes/
+    │   │   └── todo-routes.ts
+    │   └── tests/
+    │       └──  todo.spec.ts
+    └── api.ts
 ```
 
 3. We'll start with creating the stub classes.
@@ -27,8 +27,8 @@ src
 `todo-controller.ts`
 
 ```ts
-import { DbConnection } from '../../db/db-connection';
 import { ParameterizedContext } from 'koa';
+import { DbConnection } from '../../db/db-connection';
 
 export class TodoController {
   constructor(connection: DbConnection) {
@@ -71,13 +71,12 @@ export class TodoRoutes {
 `api.ts`
 
 ```ts
-import { Server } from 'http';
+import cors from '@koa/cors';
 import Koa from 'koa';
 import koaBodyParser from 'koa-bodyparser';
 import koaLogger from 'koa-logger';
-
-import { TodoRoutes } from './routes/todo-routes';
 import { DbConnection } from '../db/db-connection';
+import { TodoRoutes } from './routes/todo-routes';
 
 export class Api {
   public app: Koa;
@@ -93,21 +92,21 @@ export class Api {
 `todo.spec.ts`
 
 ```ts
-import { Api } from './../api';
-import { expect } from 'chai';
-import chai from 'chai';
-import sinon from 'sinon';
+import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
+import { Server } from 'http';
+import sinon from 'sinon';
+import { DbConnection } from './../../db/db-connection';
+import { Api } from './../api';
+
 chai.use(chaiHttp);
 
-import { DbConnection } from './../../db/db-connection';
-import { Server } from 'http';
-
 describe('/api/v1', () => {
-  let baseUrl = '/api/v1';
+  const baseUrl = '/api/v1';
   let api: Api;
   let server: Server;
   let connectionStub: sinon.SinonStubbedInstance<DbConnection>;
+
   beforeEach(done => {
     connectionStub = sinon.createStubInstance(DbConnection);
     api = new Api((connectionStub as unknown) as DbConnection);
@@ -298,13 +297,13 @@ describe('/api/v1', () => {
 });
 ```
 
-5. `npm test` will report all tests failing. We can start the implantation now.
+5. `npm test` will report all tests failing. We can start the implementation now.
 
 `todo-controller.ts`
 
 ```ts
-import { DbConnection } from '../../db/db-connection';
 import { ParameterizedContext } from 'koa';
+import { DbConnection } from '../../db/db-connection';
 
 export class TodoController {
   static connection: DbConnection;
@@ -383,7 +382,7 @@ import { TodoController } from '../controllers/todo-controller';
 const BASE_URL = '/api/v1/todos';
 
 export class TodoRoutes {
-  public router: Router;
+  router: Router;
 
   constructor(connection: DbConnection) {
     this.router = new Router();
@@ -401,16 +400,14 @@ export class TodoRoutes {
 `api.ts`
 
 ```ts
-import { Server } from 'http';
 import Koa from 'koa';
 import koaBodyParser from 'koa-bodyparser';
 import koaLogger from 'koa-logger';
-
-import { TodoRoutes } from './routes/todo-routes';
 import { DbConnection } from '../db/db-connection';
+import { TodoRoutes } from './routes/todo-routes';
 
 export class Api {
-  public app: Koa;
+  app: Koa;
 
   constructor(connection: DbConnection) {
     this.app = new Koa();
@@ -429,9 +426,9 @@ export class Api {
 `index.ts`
 
 ```ts
-import { DbConnection } from './db/db-connection';
 import { createPool } from 'slonik';
 import { Api } from './api/api';
+import { DbConnection } from './db/db-connection';
 
 const pool = createPool('postgresql://postgres:mysecretpassword@localhost:5432/todolist');
 const connection = new DbConnection(pool);
@@ -461,23 +458,21 @@ npm install -D @types/koa__cors
 `api.ts`
 
 ```ts
-import { Server } from 'http';
+import cors from '@koa/cors';
 import Koa from 'koa';
 import koaBodyParser from 'koa-bodyparser';
 import koaLogger from 'koa-logger';
-import Cors from '@koa/cors';
-
-import { TodoRoutes } from './routes/todo-routes';
 import { DbConnection } from '../db/db-connection';
+import { TodoRoutes } from './routes/todo-routes';
 
 export class Api {
-  public app: Koa;
+  app: Koa;
 
   constructor(connection: DbConnection) {
     this.app = new Koa();
     this.app.use(koaLogger());
     this.app.use(koaBodyParser());
-    this.app.use(Cors());
+    this.app.use(cors());
 
     const todoRoutes = new TodoRoutes(connection);
 
