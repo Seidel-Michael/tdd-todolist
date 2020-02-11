@@ -41,46 +41,6 @@ export interface TodoItem {
 }
 ```
 
-<!--
-`models/todo-item.spec.ts`
-
-```ts
-import { TodoItem } from './todo-item';
-
-describe('TodoItem', () => {
-  it('should create an instance', () => {
-    expect(new TodoItem()).toBeTruthy();
-  });
-
-  it('should set values in constructor', () => {
-    let todo = new TodoItem({
-      id: 'abc',
-      title: 'hello',
-      state: true
-    });
-    expect(todo.id).toEqual('abc');
-    expect(todo.title).toEqual('hello');
-    expect(todo.state).toEqual(true);
-  });
-});
-```
-
-5. Run the tests with `ng test` and ensure that they are red. Then we can do the implementation.
-
-`models/todo-item.ts`
-
-```ts
-export class TodoItem {
-  id: string;
-  title: string;
-  state: boolean;
-
-  constructor(values: object = {}) {
-    Object.assign(this, values);
-  }
-}
-``` -->
-
 5. In order to keep the base URL of the backend flexible we're gonna add the `baseApi` to the Angular environment. This is not suitable for production environments because the base URL is compiled into the app and cannot be changed unless the app is rebuilt.
 
 `environments/enviroment.ts`
@@ -101,7 +61,7 @@ export const environment = {
 };
 ```
 
-7. We start with the `TodoService` that is responsible for talking to our REST API.
+6. We start with the `TodoService` that is responsible for talking to our REST API.
 
 ```sh
 ng generate service services/todo
@@ -305,7 +265,7 @@ describe('TodoServiceService', () => {
 });
 ```
 
-8. The tests schould now be red and we can start with the implemenation.
+7. The tests schould now be red and we can start with the implemenation.
 
 `services/todo.service.ts`
 
@@ -344,7 +304,7 @@ export class TodoService {
 }
 ```
 
-9. Now it is time to create the _Components_. We're starting with the `TodoListHeader` component.
+8. Now it is time to create the _Components_. We're starting with the `TodoListHeader` component.
 
 ```sh
 ng generate component components/todo-list-header
@@ -429,7 +389,7 @@ describe('TodoListHeaderComponent', () => {
 });
 ```
 
-10. After verifying that the test are red we can start implementing the component and add the html and less files. We're not gonna test the HTML file. It is possible to check the databinding in unit tests. We do this later with e2e tests.
+9. After verifying that the test are red we can start implementing the component and add the html and less files. We're not gonna test the HTML file. It is possible to check the databinding in unit tests. We do this later with e2e tests.
 
 `components/todo-list-header/todo-list-header.component.ts`
 
@@ -518,7 +478,7 @@ h1 {
 }
 ```
 
-11. The next component is the `TodoListItem` component.
+10. The next component is the `TodoListItem` component.
 
 ```sh
 ng generate component components/todo-list-item
@@ -621,7 +581,7 @@ describe('TodoListItemComponent', () => {
 });
 ```
 
-12. The `TodoListItem` component implementation.
+11. The `TodoListItem` component implementation.
 
 `components/todo-list-item/todo-list-item.component.ts`
 
@@ -729,7 +689,7 @@ button {
 }
 ```
 
-13. The last component to create is the `TodoList` component.
+12. The last component to create is the `TodoList` component.
 
 ```sh
 ng generate component components/todo-list
@@ -832,7 +792,7 @@ describe('TodoListComponent', () => {
 });
 ```
 
-14. The `TodoList` component implementation
+13. The `TodoList` component implementation
 
 `components/todo-list/todo-list.component.ts`
 
@@ -946,7 +906,7 @@ export class TodoListComponent implements OnInit {
 }
 ```
 
-15. In the last steps we're gonna bring everthing together in the app component.
+14. In the last steps we're gonna bring everthing together in the app component.
 
 `app.module.ts`
 
@@ -1116,7 +1076,7 @@ describe('AppComponent', () => {
 });
 ```
 
-16. The last implementation.
+15. The last implementation.
 
 `app.component.ts`
 

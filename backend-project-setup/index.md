@@ -123,7 +123,7 @@ export default hello;
 
 This is just the stub for a simple hello world function.
 
-8. Now we have to write the test.
+9. Now we have to write the test.
 
 `index.spec.ts`
 
@@ -140,7 +140,7 @@ describe('hello', () => {
 });
 ```
 
-9. If we now run `npm test` in the console we should be able to see the failing test.
+10. If we now run `npm test` in the console we should be able to see the failing test.
 
 ```sh
 npm run test
@@ -177,7 +177,7 @@ npm ERR! A complete log of this run can be found in:
 npm ERR!     /home/seidelm/.npm/_logs/2020-01-23T15_26_28_534Z-debug.log
 ```
 
-10. Now that we verified that the test fails, we can implement the function.
+11. Now that we verified that the test fails, we can implement the function.
 
 `index.ts`
 
@@ -189,7 +189,7 @@ export function hello(name: string): string {
 export default hello;
 ```
 
-11. If we run `npm test` now, we should see the successful test result.
+12. If we run `npm test` now, we should see the successful test result.
 
 ```sh
 npm run test
@@ -206,7 +206,7 @@ npm run test
   1 passing (9ms)
 ```
 
-12. With our first running test we can create a GitHub actions pipeline to automate the testing. We also run the `npm run check` command to verify that our code is linted correctly. To display the code coverage we use the service of [codecov](https://codecov.io/). You have to add your GitHub repository there to generate a token. This token has to be setup as a secret called `CODECOV_TOKEN` in your GitHub repository.
+13. With our first running test we can create a GitHub actions pipeline to automate the testing. We also run the `npm run check` command to verify that our code is linted correctly. To display the code coverage we use the service of [codecov](https://codecov.io/). You have to add your GitHub repository there to generate a token. This token has to be setup as a secret called `CODECOV_TOKEN` in your GitHub repository.
 
 `github/workflows/ci.yml`
 
@@ -235,7 +235,6 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage/lcov.info
-      - run: npm run tslint
 ```
 
 This concludes our first steps. We now have a project setup that is able to run tests. We continue with the [database](../database/index.md) part of this project.
